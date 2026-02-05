@@ -1,0 +1,5 @@
+{
+  "name": "Esports Tournament UI Suite",
+  "description": "A comprehensive esports broadcast package featuring a Ban/Pick phase screen, an in-game overlay, and a post-match MVP summary screen.",
+  "requestFramePermissions": []
+}
