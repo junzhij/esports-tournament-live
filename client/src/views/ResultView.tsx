@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLiveState } from '../lib/liveState';
+import { useMatchTimer } from '../lib/useMatchTimer';
 
 interface ResultViewProps {
   transparent: boolean;
@@ -7,6 +8,7 @@ interface ResultViewProps {
 
 const ResultView: React.FC<ResultViewProps> = ({ transparent }) => {
   const { state, connected, error } = useLiveState();
+  const timerText = useMatchTimer(state?.match ?? null);
 
   if (!state) {
     return (
@@ -24,7 +26,6 @@ const ResultView: React.FC<ResultViewProps> = ({ transparent }) => {
   const result = game?.result;
   const winnerName = result ? (result.winner === 'A' ? state.teams.A.name : state.teams.B.name) : '待定';
   const winnerColor = result?.winner === 'A' ? 'text-esports-red' : 'text-esports-blue';
-
   return (
     <div className={`w-full h-screen flex flex-col ${transparent ? 'bg-transparent' : 'bg-background-dark'} text-white font-display overflow-hidden relative`}>
       <span className="hidden text-esports-red text-esports-blue"></span>
@@ -105,6 +106,7 @@ const ResultView: React.FC<ResultViewProps> = ({ transparent }) => {
 
       <footer className="h-[120px] w-full border-t border-white/10 bg-[#111318]/90 px-12 py-5 backdrop-blur-md flex items-center justify-between">
         <div className="text-sm text-white/70">当前局：第 {state.match.current_game_no} 局</div>
+        <div className="text-sm text-white/70">计时：{timerText}</div>
         <div className="text-sm text-white/70">状态：{state.match.status === 'running' ? '进行中' : '已结束'}</div>
       </footer>
     </div>

@@ -46,6 +46,10 @@ export const api = {
     fetchJson<{ ok: boolean }>('/api/match', { method: 'PATCH', body: JSON.stringify(payload) }),
   updateTeam: (side: TeamSide, payload: Partial<{ name: string; logo_url: string; color: string }>) =>
     fetchJson<{ ok: boolean }>(`/api/team/${side}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  updateScore: (payload: { score_a: number; score_b: number }) =>
+    fetchJson<{ ok: boolean }>(`/api/match/score`, { method: 'POST', body: JSON.stringify(payload) }),
+  resetTimer: (payload?: { base_seconds?: number }) =>
+    fetchJson<{ ok: boolean }>(`/api/match/timer/reset`, { method: 'POST', body: JSON.stringify(payload ?? {}) }),
   saveBpDraft: (gameNo: number, payload: BpPayload) =>
     fetchJson<{ ok: boolean }>(`/api/game/${gameNo}/bp`, { method: 'POST', body: JSON.stringify(payload) }),
   publishBp: (gameNo: number) => fetchJson<{ ok: boolean }>(`/api/game/${gameNo}/publish`, { method: 'POST', body: '{}' }),

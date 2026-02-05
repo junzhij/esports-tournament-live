@@ -15,6 +15,8 @@ export interface MatchInfo {
   status: 'running' | 'finished';
   score_a: number;
   score_b: number;
+  timer_base_seconds: number;
+  timer_started_at: string | null;
 }
 
 export interface BpPick {

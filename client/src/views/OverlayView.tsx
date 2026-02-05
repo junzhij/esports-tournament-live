@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLiveState } from '../lib/liveState';
+import { useMatchTimer } from '../lib/useMatchTimer';
 import { BpPayload } from '../types';
 
 interface OverlayViewProps {
@@ -19,6 +20,7 @@ const emptyBp = (banCount: number): BpPayload => ({
 
 const OverlayView: React.FC<OverlayViewProps> = ({ transparent }) => {
   const { state, connected, error } = useLiveState();
+  const timerText = useMatchTimer(state?.match ?? null);
 
   if (!state) {
     return (
@@ -34,7 +36,6 @@ const OverlayView: React.FC<OverlayViewProps> = ({ transparent }) => {
   const gameKey = String(state.match.current_game_no);
   const game = state.games[gameKey];
   const bp = game?.bp ?? emptyBp(state.match.ban_count);
-
   return (
     <div className={`w-full h-screen relative ${transparent ? 'bg-transparent' : 'bg-background-dark'} text-white font-display overflow-hidden`}>
       {/* Top Bar */}
@@ -61,7 +62,7 @@ const OverlayView: React.FC<OverlayViewProps> = ({ transparent }) => {
             </div>
             <div className="flex items-center gap-2 mt-1">
               <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-xs font-bold uppercase border border-primary/30">BO{state.match.best_of}</span>
-              <span className="text-gray-400 text-xs font-medium">Game {state.match.current_game_no}</span>
+              <span className="text-gray-400 text-xs font-medium">Game {state.match.current_game_no} · {timerText}</span>
             </div>
           </div>
           {/* Blue Team */}
@@ -91,10 +92,14 @@ const OverlayView: React.FC<OverlayViewProps> = ({ transparent }) => {
                 <span className="text-xs font-bold text-red-400 uppercase">红队 Picks</span>
                 <span className="size-2 bg-esports-red rounded-full"></span>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-xs text-white/70">
+              <div className="grid grid-cols-1 gap-2 text-xs text-white/70">
                 {bp.teamA.picks.map((pick, idx) => (
                   <div key={idx} className="bg-white/5 rounded px-2 py-1 border border-white/10">
-                    {pick.hero || '未选'}
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/45 uppercase">{pick.pos || `P${idx + 1}`}</span>
+                      <span className="text-esports-red/80">{pick.player || '选手待定'}</span>
+                    </div>
+                    <div className="mt-0.5 text-white">{pick.hero || '英雄未选'}</div>
                   </div>
                 ))}
               </div>
@@ -104,10 +109,14 @@ const OverlayView: React.FC<OverlayViewProps> = ({ transparent }) => {
                 <span className="text-xs font-bold text-blue-400 uppercase">蓝队 Picks</span>
                 <span className="size-2 bg-esports-blue rounded-full"></span>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-xs text-white/70">
+              <div className="grid grid-cols-1 gap-2 text-xs text-white/70">
                 {bp.teamB.picks.map((pick, idx) => (
                   <div key={idx} className="bg-white/5 rounded px-2 py-1 border border-white/10">
-                    {pick.hero || '未选'}
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/45 uppercase">{pick.pos || `P${idx + 1}`}</span>
+                      <span className="text-esports-blue/80">{pick.player || '选手待定'}</span>
+                    </div>
+                    <div className="mt-0.5 text-white">{pick.hero || '英雄未选'}</div>
                   </div>
                 ))}
               </div>

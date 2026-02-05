@@ -20,6 +20,9 @@ const MatchSettings: React.FC<MatchSettingsProps> = ({ state, onRefresh, pushAle
   const [matchDirty, setMatchDirty] = useState(false);
   const [teamADirty, setTeamADirty] = useState(false);
   const [teamBDirty, setTeamBDirty] = useState(false);
+  const [scoreForm, setScoreForm] = useState({ score_a: state.match.score_a, score_b: state.match.score_b });
+  const [scoreDirty, setScoreDirty] = useState(false);
+  const [timerText, setTimerText] = useState('00:00');
 
   useEffect(() => {
     if (!matchDirty) {
@@ -31,7 +34,25 @@ const MatchSettings: React.FC<MatchSettingsProps> = ({ state, onRefresh, pushAle
     if (!teamBDirty) {
       setTeamB(state.teams.B);
     }
+    if (!scoreDirty) {
+      setScoreForm({ score_a: state.match.score_a, score_b: state.match.score_b });
+    }
   }, [state]);
+
+  useEffect(() => {
+    const tick = () => {
+      const base = state.match.timer_base_seconds ?? 0;
+      const startedAt = state.match.timer_started_at ? Date.parse(state.match.timer_started_at) : null;
+      const elapsed = startedAt ? Math.max(0, Math.floor((Date.now() - startedAt) / 1000)) : 0;
+      const total = base + elapsed;
+      const minutes = String(Math.floor(total / 60)).padStart(2, '0');
+      const seconds = String(total % 60).padStart(2, '0');
+      setTimerText(`${minutes}:${seconds}`);
+    };
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, [state.match.timer_base_seconds, state.match.timer_started_at]);
 
   const gameOptions = useMemo(() => {
     return Array.from({ length: matchForm.best_of }, (_, i) => i + 1);
@@ -70,6 +91,33 @@ const MatchSettings: React.FC<MatchSettingsProps> = ({ state, onRefresh, pushAle
       await onRefresh();
     } catch (err: any) {
       pushAlert('error', err.message ?? '保存失败');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updateScore = async () => {
+    try {
+      setSaving(true);
+      await api.updateScore({ score_a: scoreForm.score_a, score_b: scoreForm.score_b });
+      pushAlert('success', '比分已更新');
+      setScoreDirty(false);
+      await onRefresh();
+    } catch (err: any) {
+      pushAlert('error', err.message ?? '比分更新失败');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const resetTimer = async () => {
+    try {
+      setSaving(true);
+      await api.resetTimer({ base_seconds: 0 });
+      pushAlert('success', '计时已重置');
+      await onRefresh();
+    } catch (err: any) {
+      pushAlert('error', err.message ?? '计时重置失败');
     } finally {
       setSaving(false);
     }
@@ -161,6 +209,55 @@ const MatchSettings: React.FC<MatchSettingsProps> = ({ state, onRefresh, pushAle
           重置为服务器
         </button>
         {matchDirty ? <span className="pill">已修改</span> : <span className="pill">已同步</span>}
+      </div>
+
+      <div style={{ height: 24 }} />
+      <div className="panel-title">比分与计时</div>
+      <div className="grid-3">
+        <FormField label="红队比分">
+          <input
+            type="number"
+            min="0"
+            value={scoreForm.score_a}
+            onChange={(e) => {
+              setScoreForm({ ...scoreForm, score_a: Number(e.target.value) });
+              setScoreDirty(true);
+            }}
+          />
+        </FormField>
+        <FormField label="蓝队比分">
+          <input
+            type="number"
+            min="0"
+            value={scoreForm.score_b}
+            onChange={(e) => {
+              setScoreForm({ ...scoreForm, score_b: Number(e.target.value) });
+              setScoreDirty(true);
+            }}
+          />
+        </FormField>
+        <FormField label="当前计时">
+          <input value={timerText} readOnly />
+        </FormField>
+      </div>
+      <div className="row" style={{ marginTop: 12 }}>
+        <button className="button" onClick={updateScore} disabled={saving}>
+          更新比分
+        </button>
+        <button
+          className="button secondary"
+          onClick={() => {
+            setScoreForm({ score_a: state.match.score_a, score_b: state.match.score_b });
+            setScoreDirty(false);
+          }}
+          disabled={saving}
+        >
+          重置比分
+        </button>
+        <button className="button danger" onClick={resetTimer} disabled={saving}>
+          重置计时
+        </button>
+        {scoreDirty ? <span className="pill">比分已修改</span> : <span className="pill">比分已同步</span>}
       </div>
 
       <div style={{ height: 24 }} />

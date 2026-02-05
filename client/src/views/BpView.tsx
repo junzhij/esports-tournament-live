@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLiveState } from '../lib/liveState';
+import { useMatchTimer } from '../lib/useMatchTimer';
 import { BpPayload } from '../types';
 
 interface BpViewProps {
@@ -19,6 +20,7 @@ const emptyBp = (banCount: number): BpPayload => ({
 
 const BpView: React.FC<BpViewProps> = ({ transparent }) => {
   const { state, connected, error } = useLiveState();
+  const timerText = useMatchTimer(state?.match ?? null);
 
   if (!state) {
     return (
@@ -40,7 +42,7 @@ const BpView: React.FC<BpViewProps> = ({ transparent }) => {
       <header className="h-[120px] shrink-0 w-full bg-[#151b28] border-b border-white/5 flex items-center justify-between px-10 relative z-20">
         <div className="flex flex-col">
           <h1 className="text-3xl font-black tracking-tight">{state.match.title}</h1>
-          <p className="text-white/60 text-sm font-medium tracking-widest uppercase mt-1">BO{state.match.best_of} · 第 {state.match.current_game_no} 局</p>
+          <p className="text-white/60 text-sm font-medium tracking-widest uppercase mt-1">BO{state.match.best_of} · 第 {state.match.current_game_no} 局 · {timerText}</p>
         </div>
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-8">
           <div className="text-5xl font-bold text-esports-red">{state.match.score_a}</div>

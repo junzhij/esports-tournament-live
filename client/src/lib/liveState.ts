@@ -7,19 +7,11 @@ import {
   WsMessage
 } from '../types';
 
-declare global {
-  interface Window {
-    __API_BASE__?: string;
-  }
-}
-
-const API_BASE = window.__API_BASE__ ?? import.meta.env.VITE_API_BASE;
+const API_BASE = import.meta.env.VITE_API_BASE as string | undefined;
 
 export async function fetchState(): Promise<StatePublishedResponse> {
-  if (!API_BASE) {
-    throw new Error('API_BASE 未配置（请设置 window.__API_BASE__ 或 VITE_API_BASE）');
-  }
-  const res = await fetch(`${API_BASE}/api/state`);
+  const base = API_BASE ?? '';
+  const res = await fetch(`${base}/api/state`);
   if (!res.ok) {
     throw new Error('无法获取状态');
   }
@@ -27,12 +19,13 @@ export async function fetchState(): Promise<StatePublishedResponse> {
 }
 
 function getWsUrl() {
-  if (!API_BASE) {
-    throw new Error('API_BASE 未配置（请设置 window.__API_BASE__ 或 VITE_API_BASE）');
+  if (API_BASE) {
+    const base = new URL(API_BASE);
+    const protocol = base.protocol === 'https:' ? 'wss' : 'ws';
+    return `${protocol}://${base.host}/ws`;
   }
-  const base = new URL(API_BASE);
-  const protocol = base.protocol === 'https:' ? 'wss' : 'ws';
-  return `${protocol}://${base.host}/ws`;
+  const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+  return `${protocol}://${window.location.host}/ws`;
 }
 
 export function applyMessage(
@@ -96,6 +89,18 @@ export function applyMessage(
         ...state.match,
         score_a: payload.score_a,
         score_b: payload.score_b
+      }
+    };
+  }
+
+  if (message.type === 'timer_update' && message.payload) {
+    const payload = message.payload as { timer_base_seconds: number; timer_started_at: string | null };
+    return {
+      ...state,
+      match: {
+        ...state.match,
+        timer_base_seconds: payload.timer_base_seconds,
+        timer_started_at: payload.timer_started_at
       }
     };
   }
@@ -168,10 +173,6 @@ export function useLiveState() {
   };
 
   useEffect(() => {
-    if (!API_BASE) {
-      setError('VITE_API_BASE 未配置');
-      return;
-    }
     fetchState()
       .then((data) => {
         setState(data);

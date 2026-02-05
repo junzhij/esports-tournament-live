@@ -28,6 +28,8 @@ export function initDb(): Db {
       status TEXT NOT NULL,
       score_a INTEGER NOT NULL,
       score_b INTEGER NOT NULL,
+      timer_base_seconds INTEGER NOT NULL DEFAULT 0,
+      timer_started_at TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
@@ -67,10 +69,26 @@ export function initDb(): Db {
     CREATE INDEX IF NOT EXISTS idx_history_match_game_type ON publish_history(match_id, game_no, type, created_at);
   `);
 
+  ensureMatchColumns(db);
   seedIfNeeded(db);
 
   dbInstance = db;
   return db;
+}
+
+function ensureMatchColumns(db: Db) {
+  const columns = db.prepare('PRAGMA table_info(match)').all() as { name: string }[];
+  const names = new Set(columns.map((col) => col.name));
+  if (!names.has('timer_base_seconds')) {
+    db.exec('ALTER TABLE match ADD COLUMN timer_base_seconds INTEGER NOT NULL DEFAULT 0');
+  }
+  if (!names.has('timer_started_at')) {
+    db.exec('ALTER TABLE match ADD COLUMN timer_started_at TEXT');
+  }
+  const now = new Date().toISOString();
+  db.prepare(
+    'UPDATE match SET timer_base_seconds = COALESCE(timer_base_seconds, 0), timer_started_at = COALESCE(timer_started_at, ?) WHERE id = 1'
+  ).run(now);
 }
 
 function seedIfNeeded(db: Db) {
@@ -82,6 +100,8 @@ function seedIfNeeded(db: Db) {
     `INSERT INTO match (id, title, best_of, ban_count, current_game_no, status, score_a, score_b, created_at, updated_at)
      VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run('班赛 5v5', 3, 3, 1, 'running', 0, 0, now, now);
+
+  db.prepare('UPDATE match SET timer_base_seconds = 0, timer_started_at = ? WHERE id = 1').run(now);
 
   db.prepare(
     `INSERT INTO team (side, name, logo_url, color)

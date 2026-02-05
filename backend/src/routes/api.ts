@@ -87,6 +87,11 @@ function recalcScore(bestOf: number) {
   return { scoreA, scoreB, status };
 }
 
+function deriveStatusFromScore(bestOf: number, scoreA: number, scoreB: number) {
+  const winTarget = Math.ceil(bestOf / 2);
+  return scoreA >= winTarget || scoreB >= winTarget ? 'finished' : 'running';
+}
+
 export async function registerApiRoutes(fastify: FastifyInstance) {
   fastify.get('/api/health', async () => {
     return { status: 'ok', time: nowIso() };
@@ -162,6 +167,49 @@ export async function registerApiRoutes(fastify: FastifyInstance) {
     const teams = buildState(db, false).teams;
     broadcast({ type: 'match_update', payload: { match, teams } });
 
+    return { ok: true };
+  });
+
+  fastify.post('/api/match/score', async (request: FastifyRequest, reply: FastifyReply) => {
+    const body = request.body as { score_a?: number; score_b?: number };
+    if (!Number.isInteger(body.score_a) || !Number.isInteger(body.score_b) || (body.score_a ?? 0) < 0 || (body.score_b ?? 0) < 0) {
+      return reply.code(400).send({ error: 'score_a/score_b 必须为非负整数' });
+    }
+
+    const match = loadMatch(db);
+    const status = deriveStatusFromScore(match.best_of, body.score_a!, body.score_b!);
+    const now = nowIso();
+    db.prepare('UPDATE match SET score_a = ?, score_b = ?, status = ?, updated_at = ? WHERE id = 1').run(
+      body.score_a,
+      body.score_b,
+      status,
+      now
+    );
+
+    const updatedMatch = loadMatch(db);
+    const teams = buildState(db, false).teams;
+    broadcast({ type: 'score_update', payload: { score_a: updatedMatch.score_a, score_b: updatedMatch.score_b } });
+    broadcast({ type: 'match_update', payload: { match: updatedMatch, teams } });
+    return { ok: true };
+  });
+
+  fastify.post('/api/match/timer/reset', async (request: FastifyRequest, reply: FastifyReply) => {
+    const body = request.body as { base_seconds?: number } | undefined;
+    const baseSeconds = body?.base_seconds ?? 0;
+    if (!Number.isInteger(baseSeconds) || baseSeconds < 0) {
+      return reply.code(400).send({ error: 'base_seconds 必须为非负整数' });
+    }
+
+    const now = nowIso();
+    db.prepare('UPDATE match SET timer_base_seconds = ?, timer_started_at = ?, updated_at = ? WHERE id = 1').run(
+      baseSeconds,
+      now,
+      now
+    );
+    const match = loadMatch(db);
+    const teams = buildState(db, false).teams;
+    broadcast({ type: 'timer_update', payload: { timer_base_seconds: match.timer_base_seconds, timer_started_at: match.timer_started_at } });
+    broadcast({ type: 'match_update', payload: { match, teams } });
     return { ok: true };
   });
 

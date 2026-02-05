@@ -18,6 +18,8 @@ interface DbMatchRow {
   status: 'running' | 'finished';
   score_a: number;
   score_b: number;
+  timer_base_seconds?: number;
+  timer_started_at?: string | null;
 }
 
 interface DbTeamRow {
@@ -90,7 +92,9 @@ export function buildState(db: Db, includeDrafts: boolean): StatePublishedRespon
     current_game_no: matchRow.current_game_no,
     status: matchRow.status,
     score_a: matchRow.score_a,
-    score_b: matchRow.score_b
+    score_b: matchRow.score_b,
+    timer_base_seconds: matchRow.timer_base_seconds ?? 0,
+    timer_started_at: matchRow.timer_started_at ?? null
   };
 
   const games: Record<string, GameStatePublished | GameStateAdmin> = {};

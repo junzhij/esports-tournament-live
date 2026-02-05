@@ -9,12 +9,15 @@ export interface TeamInfo {
 export interface MatchInfo {
   id: number;
   title: string;
+  rtmp_url: string;
   best_of: number;
   ban_count: number;
   current_game_no: number;
   status: 'running' | 'finished';
   score_a: number;
   score_b: number;
+  timer_base_seconds: number;
+  timer_started_at: string | null;
 }
 
 export interface BpPick {
