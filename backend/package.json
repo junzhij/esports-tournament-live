@@ -1,0 +1,25 @@
+{
+  "name": "esports-tournament-live-backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "@fastify/cors": "^9.0.0",
+    "@fastify/static": "^7.0.2",
+    "@fastify/websocket": "^10.0.1",
+    "better-sqlite3": "^11.6.0",
+    "fastify": "^4.26.2",
+    "ws": "^8.17.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "@types/better-sqlite3": "^7.6.8",
+    "@types/ws": "^8.5.10",
+    "tsx": "^4.15.7",
+    "typescript": "^5.4.5"
+  }
+}

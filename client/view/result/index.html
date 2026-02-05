@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>结算 MVP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="/config.js"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: '#256af4',
+              'background-dark': '#101622',
+              'background-light': '#f5f6f8',
+              'esports-red': '#ef4444',
+              'esports-blue': '#256af4',
+              'esports-gold': '#C6A456',
+              'esports-gold-light': '#F2D88C'
+            },
+            fontFamily: {
+              display: ['Space Grotesk', 'sans-serif'],
+              body: ['Noto Sans SC', 'sans-serif']
+            },
+            backgroundImage: {
+              'gold-gradient': 'linear-gradient(135deg, #F2D88C 0%, #C6A456 50%, #8E722A 100%)',
+              'card-gradient': 'linear-gradient(180deg, rgba(27, 31, 39, 0.9) 0%, rgba(16, 22, 34, 0.95) 100%)'
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Space Grotesk', 'Noto Sans SC', sans-serif;
+      }
+      .gold-text-glow {
+        text-shadow: 0 0 20px rgba(198, 164, 86, 0.4);
+      }
+    </style>
+  </head>
+  <body class="bg-background-dark text-white font-display">
+    <div id="root"></div>
+    <script type="module" src="/src/entry/result.tsx"></script>
+  </body>
+</html>
