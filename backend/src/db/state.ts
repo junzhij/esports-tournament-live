@@ -12,6 +12,7 @@ import {
 interface DbMatchRow {
   id: number;
   title: string;
+  rtmp_url?: string;
   best_of: number;
   ban_count: number;
   current_game_no: number;
@@ -87,6 +88,7 @@ export function buildState(db: Db, includeDrafts: boolean): StatePublishedRespon
   const match: MatchInfo = {
     id: matchRow.id,
     title: matchRow.title,
+    rtmp_url: matchRow.rtmp_url ?? '',
     best_of: matchRow.best_of,
     ban_count: matchRow.ban_count,
     current_game_no: matchRow.current_game_no,

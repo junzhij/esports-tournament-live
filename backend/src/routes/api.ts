@@ -108,6 +108,7 @@ export async function registerApiRoutes(fastify: FastifyInstance) {
   fastify.patch('/api/match', async (request: FastifyRequest, reply: FastifyReply) => {
     const body = request.body as Partial<{
       title: string;
+      rtmp_url: string;
       best_of: number;
       ban_count: number;
       current_game_no: number;
@@ -133,6 +134,10 @@ export async function registerApiRoutes(fastify: FastifyInstance) {
     if (body.title !== undefined) {
       updates.push('title = ?');
       params.push(body.title);
+    }
+    if (body.rtmp_url !== undefined) {
+      updates.push('rtmp_url = ?');
+      params.push(body.rtmp_url);
     }
     if (body.best_of !== undefined) {
       updates.push('best_of = ?');

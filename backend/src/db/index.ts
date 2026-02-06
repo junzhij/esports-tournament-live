@@ -22,6 +22,7 @@ export function initDb(): Db {
     CREATE TABLE IF NOT EXISTS match (
       id INTEGER PRIMARY KEY,
       title TEXT NOT NULL,
+      rtmp_url TEXT NOT NULL DEFAULT '',
       best_of INTEGER NOT NULL,
       ban_count INTEGER NOT NULL,
       current_game_no INTEGER NOT NULL,
@@ -79,6 +80,9 @@ export function initDb(): Db {
 function ensureMatchColumns(db: Db) {
   const columns = db.prepare('PRAGMA table_info(match)').all() as { name: string }[];
   const names = new Set(columns.map((col) => col.name));
+  if (!names.has('rtmp_url')) {
+    db.exec("ALTER TABLE match ADD COLUMN rtmp_url TEXT NOT NULL DEFAULT ''");
+  }
   if (!names.has('timer_base_seconds')) {
     db.exec('ALTER TABLE match ADD COLUMN timer_base_seconds INTEGER NOT NULL DEFAULT 0');
   }
@@ -87,7 +91,7 @@ function ensureMatchColumns(db: Db) {
   }
   const now = new Date().toISOString();
   db.prepare(
-    'UPDATE match SET timer_base_seconds = COALESCE(timer_base_seconds, 0), timer_started_at = COALESCE(timer_started_at, ?) WHERE id = 1'
+    "UPDATE match SET rtmp_url = COALESCE(rtmp_url, ''), timer_base_seconds = COALESCE(timer_base_seconds, 0), timer_started_at = COALESCE(timer_started_at, ?) WHERE id = 1"
   ).run(now);
 }
 
@@ -97,9 +101,9 @@ function seedIfNeeded(db: Db) {
 
   const now = new Date().toISOString();
   db.prepare(
-    `INSERT INTO match (id, title, best_of, ban_count, current_game_no, status, score_a, score_b, created_at, updated_at)
-     VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  ).run('班赛 5v5', 3, 3, 1, 'running', 0, 0, now, now);
+    `INSERT INTO match (id, title, rtmp_url, best_of, ban_count, current_game_no, status, score_a, score_b, created_at, updated_at)
+     VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run('班赛 5v5', '', 3, 3, 1, 'running', 0, 0, now, now);
 
   db.prepare('UPDATE match SET timer_base_seconds = 0, timer_started_at = ? WHERE id = 1').run(now);
 

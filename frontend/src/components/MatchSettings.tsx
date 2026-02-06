@@ -81,6 +81,7 @@ const MatchSettings: React.FC<MatchSettingsProps> = ({ state, onRefresh, pushAle
       setSaving(true);
       await api.updateMatch({
         title: matchForm.title,
+        rtmp_url: matchForm.rtmp_url,
         best_of: matchForm.best_of,
         ban_count: matchForm.ban_count,
         current_game_no: matchForm.current_game_no,
@@ -134,6 +135,16 @@ const MatchSettings: React.FC<MatchSettingsProps> = ({ state, onRefresh, pushAle
               setMatchForm({ ...matchForm, title: e.target.value });
               setMatchDirty(true);
             }}
+          />
+        </FormField>
+        <FormField label="RTMP 地址">
+          <input
+            value={matchForm.rtmp_url ?? ''}
+            onChange={(e) => {
+              setMatchForm({ ...matchForm, rtmp_url: e.target.value });
+              setMatchDirty(true);
+            }}
+            placeholder="rtmp://... 或可播放的视频地址"
           />
         </FormField>
         <FormField label="BO 赛制">

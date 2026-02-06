@@ -42,7 +42,7 @@ export async function fetchJson<T>(path: string, options?: RequestInit): Promise
 
 export const api = {
   getAdminState: () => fetchJson<AdminState>('/api/admin/state'),
-  updateMatch: (payload: Partial<{ title: string; best_of: number; ban_count: number; current_game_no: number; status: 'running' | 'finished' }>) =>
+  updateMatch: (payload: Partial<{ title: string; rtmp_url: string; best_of: number; ban_count: number; current_game_no: number; status: 'running' | 'finished' }>) =>
     fetchJson<{ ok: boolean }>('/api/match', { method: 'PATCH', body: JSON.stringify(payload) }),
   updateTeam: (side: TeamSide, payload: Partial<{ name: string; logo_url: string; color: string }>) =>
     fetchJson<{ ok: boolean }>(`/api/team/${side}`, { method: 'PATCH', body: JSON.stringify(payload) }),

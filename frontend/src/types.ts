@@ -9,6 +9,7 @@ export interface TeamInfo {
 export interface MatchInfo {
   id: number;
   title: string;
+  rtmp_url: string;
   best_of: number;
   ban_count: number;
   current_game_no: number;

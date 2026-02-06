@@ -36,6 +36,8 @@ const OverlayView: React.FC<OverlayViewProps> = ({ transparent }) => {
   const gameKey = String(state.match.current_game_no);
   const game = state.games[gameKey];
   const bp = game?.bp ?? emptyBp(state.match.ban_count);
+  const streamUrl = (state.match.rtmp_url ?? '').trim();
+  const isRawRtmp = streamUrl.startsWith('rtmp://');
   return (
     <div className={`w-full h-screen relative ${transparent ? 'bg-transparent' : 'bg-background-dark'} text-white font-display overflow-hidden`}>
       {/* Top Bar */}
@@ -78,6 +80,32 @@ const OverlayView: React.FC<OverlayViewProps> = ({ transparent }) => {
           </div>
         </div>
       </header>
+
+      {/* Main Stream Area */}
+      <section className="absolute top-[140px] left-4 w-[1380px] h-[776px] rounded-xl overflow-hidden border border-white/10 bg-black/40 backdrop-blur-sm">
+        {streamUrl ? (
+          isRawRtmp ? (
+            <div className="w-full h-full flex items-center justify-center text-center px-8">
+              <div>
+                <div className="text-lg font-bold text-yellow-300">当前是 RTMP 原始地址</div>
+                <div className="text-sm text-white/70 mt-2">浏览器通常不能直接播放 `rtmp://`，请改为可播放地址（如 HLS/FLV 播放页）。</div>
+              </div>
+            </div>
+          ) : (
+            <video
+              key={streamUrl}
+              className="w-full h-full object-cover"
+              src={streamUrl}
+              autoPlay
+              muted
+              playsInline
+              controls={false}
+            />
+          )
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-sm text-white/60">未配置推流播放地址</div>
+        )}
+      </section>
 
       {/* Right Sidebar */}
       <aside className="absolute top-[140px] right-4 w-[340px] flex flex-col gap-4 pb-4">
